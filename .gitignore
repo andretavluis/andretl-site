@@ -21,8 +21,6 @@ pids/
 
 # Cloudflare tooling (may contain account IDs)
 .wrangler/
-wrangler.toml
-wrangler.jsonc
 
 # Coverage
 coverage/
