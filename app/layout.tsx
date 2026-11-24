@@ -7,6 +7,7 @@ import Navigation from '@/components/Template/Navigation';
 import ScrollToTop from '@/components/Template/ScrollToTop';
 import { AUTHOR_NAME, SITE_URL, TWITTER_HANDLE } from '@/lib/utils';
 import './tailwind.css';
+import Beacon from '@/components/Analytics/Beacon';
 
 const sourceSans = Source_Sans_3({
   weight: ['400', '700'],
@@ -103,6 +104,7 @@ export default function RootLayout({
       </head>
       <body>
         <ScrollToTop />
+        <Beacon />
         <div className="site-wrapper">
           <Navigation />
           {children}
