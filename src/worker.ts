@@ -15,6 +15,8 @@ interface AnalyticsDataset {
 
 interface D1PreparedStatement {
   bind: (...values: unknown[]) => D1PreparedStatement;
+  first?: <T = unknown>() => Promise<T | null>;
+  all?: <T = unknown>() => Promise<{ results: T[] }>;
 }
 
 interface D1Like {
@@ -197,10 +199,53 @@ export async function rollup(env: Env): Promise<void> {
   await env.DB.batch(statements);
 }
 
+async function handleStats(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const days = Math.min(Number(url.searchParams.get('days') ?? '30'), 90);
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
+  const totals = await env.DB.prepare(
+    'SELECT COALESCE(SUM(views), 0) AS views FROM daily_stats WHERE event_date >= ?',
+  ).bind(since).first!<{ views: number }>();
+
+  const byPath = await env.DB.prepare(
+    'SELECT path, SUM(views) AS views FROM daily_stats WHERE event_date >= ? GROUP BY path ORDER BY views DESC LIMIT 20',
+  ).bind(since).all!();
+
+  const byReferrer = await env.DB.prepare(
+    'SELECT referrer_host, SUM(views) AS views FROM daily_stats WHERE event_date >= ? GROUP BY referrer_host ORDER BY views DESC LIMIT 20',
+  ).bind(since).all!();
+
+  const byCountry = await env.DB.prepare(
+    'SELECT country, SUM(views) AS views FROM daily_stats WHERE event_date >= ? GROUP BY country ORDER BY views DESC LIMIT 20',
+  ).bind(since).all!();
+
+  const byDevice = await env.DB.prepare(
+    'SELECT device, SUM(views) AS views FROM daily_stats WHERE event_date >= ? GROUP BY device ORDER BY views DESC',
+  ).bind(since).all!();
+
+  const byDate = await env.DB.prepare(
+    'SELECT event_date, SUM(views) AS views FROM daily_stats WHERE event_date >= ? GROUP BY event_date ORDER BY event_date ASC',
+  ).bind(since).all!();
+
+  return Response.json({
+    since,
+    totalViews: totals?.views ?? 0,
+    byPath: byPath.results,
+    byReferrer: byReferrer.results,
+    byCountry: byCountry.results,
+    byDevice: byDevice.results,
+    byDate: byDate.results,
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url);
     if (pathname === '/api/track') return handleTrack(request, env);
+    if (pathname === '/api/stats') return handleStats(request, env);
     return new Response('Not found', { status: 404 });
   },
   async scheduled(
