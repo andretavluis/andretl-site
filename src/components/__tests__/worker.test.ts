@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import worker from '../worker';
-import { classifyDevice, referrerHost } from '../worker';
+import worker from '../.../worker';
+import { classifyDevice, referrerHost } from '../.../worker';
 
 function makeEnv() {
   return {
