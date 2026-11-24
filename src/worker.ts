@@ -113,7 +113,9 @@ async function fetchAnalyticsRows(env: Env): Promise<AeRow[]> {
   );
 
   if (!response.ok) {
-    throw new Error(`Analytics Engine query failed: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Analytics Engine query failed: ${response.status} ${await response.text()}`,
+    );
   }
 
   const json = (await response.json()) as { data: AeRow[] };
@@ -139,7 +141,9 @@ interface DailyStat {
 export async function rollup(env: Env): Promise<void> {
   const rows = await fetchAnalyticsRows(env);
   const eventDate = yesterdayUtc();
-  const dayRows = rows.filter((row) => row.timestamp.slice(0, 10) === eventDate);
+  const dayRows = rows.filter(
+    (row) => row.timestamp.slice(0, 10) === eventDate,
+  );
 
   const dailyMap = new Map<string, DailyStat>();
   for (const row of dayRows) {
@@ -162,21 +166,31 @@ export async function rollup(env: Env): Promise<void> {
   const statements: D1PreparedStatement[] = [
     env.DB.prepare('DELETE FROM events WHERE event_date = ?').bind(eventDate),
     ...dayRows.map((row) =>
-      env.DB
-        .prepare(
-          'INSERT INTO events (event_date, timestamp, path, referrer_host, country, device) VALUES (?, ?, ?, ?, ?, ?)',
-        )
-        .bind(eventDate, row.timestamp, row.blob1, row.blob2, row.blob3, row.blob4),
+      env.DB.prepare(
+        'INSERT INTO events (event_date, timestamp, path, referrer_host, country, device) VALUES (?, ?, ?, ?, ?, ?)',
+      ).bind(
+        eventDate,
+        row.timestamp,
+        row.blob1,
+        row.blob2,
+        row.blob3,
+        row.blob4,
+      ),
     ),
     ...[...dailyMap.values()].map((stat) =>
-      env.DB
-        .prepare(
-          `INSERT INTO daily_stats (event_date, path, referrer_host, country, device, views)
+      env.DB.prepare(
+        `INSERT INTO daily_stats (event_date, path, referrer_host, country, device, views)
            VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT(event_date, path, referrer_host, country, device)
            DO UPDATE SET views = excluded.views`,
-        )
-        .bind(eventDate, stat.path, stat.referrerHost, stat.country, stat.device, Math.round(stat.views)),
+      ).bind(
+        eventDate,
+        stat.path,
+        stat.referrerHost,
+        stat.country,
+        stat.device,
+        Math.round(stat.views),
+      ),
     ),
   ];
 
@@ -189,7 +203,11 @@ export default {
     if (pathname === '/api/track') return handleTrack(request, env);
     return new Response('Not found', { status: 404 });
   },
-  async scheduled(_controller: unknown, env: Env, ctx: { waitUntil: (promise: Promise<unknown>) => void }): Promise<void> {
+  async scheduled(
+    _controller: unknown,
+    env: Env,
+    ctx: { waitUntil: (promise: Promise<unknown>) => void },
+  ): Promise<void> {
     ctx.waitUntil(rollup(env));
   },
 } as const;
