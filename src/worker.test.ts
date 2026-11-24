@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-
-import worker from './worker';
-import { classifyDevice, referrerHost } from './worker';
+import worker, { classifyDevice, referrerHost } from './worker';
 
 function makeEnv() {
   return {
@@ -12,7 +10,10 @@ function makeEnv() {
 function makeRequest(init?: RequestInit) {
   return new Request('https://andretl.com/api/track', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', origin: 'https://andretl.com' },
+    headers: {
+      'content-type': 'application/json',
+      origin: 'https://andretl.com',
+    },
     ...init,
   });
 }
@@ -40,7 +41,10 @@ describe('fetch handler', () => {
     const env = makeEnv();
     const response = await worker.fetch(
       makeRequest({
-        body: JSON.stringify({ path: '/about/', referrer: 'https://google.com/' }),
+        body: JSON.stringify({
+          path: '/about/',
+          referrer: 'https://google.com/',
+        }),
       }),
       env,
     );
@@ -54,14 +58,17 @@ describe('fetch handler', () => {
 
   it('rejects other methods and cross-origin calls', async () => {
     const env = makeEnv();
-    expect((await worker.fetch(makeRequest({ method: 'GET' }), env)).status).toBe(
-      405,
-    );
+    expect(
+      (await worker.fetch(makeRequest({ method: 'GET' }), env)).status,
+    ).toBe(405);
     expect(
       (
         await worker.fetch(
           makeRequest({
-            headers: { 'content-type': 'application/json', origin: 'https://evil.com' },
+            headers: {
+              'content-type': 'application/json',
+              origin: 'https://evil.com',
+            },
           }),
           env,
         )
