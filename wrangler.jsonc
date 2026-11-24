@@ -17,5 +17,15 @@
       "binding": "ANALYTICS",
       "dataset": "andretl_site_events"
     }
-  ]
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "andretl-site-db",
+      "database_id": "c4ac9f43-f1a9-4169-ba7b-6ad8a9aa4c62"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  }
 }
