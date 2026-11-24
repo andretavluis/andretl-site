@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import worker from '../.../worker';
-import { classifyDevice, referrerHost } from '../.../worker';
+import worker from './worker';
+import { classifyDevice, referrerHost } from './worker';
 
 function makeEnv() {
   return {
@@ -39,7 +39,9 @@ describe('fetch handler', () => {
   it('records an event and returns 204', async () => {
     const env = makeEnv();
     const response = await worker.fetch(
-      makeRequest({ body: JSON.stringify({ path: '/about/', referrer: 'https://google.com/' }) }),
+      makeRequest({
+        body: JSON.stringify({ path: '/about/', referrer: 'https://google.com/' }),
+      }),
       env,
     );
 
@@ -52,13 +54,15 @@ describe('fetch handler', () => {
 
   it('rejects other methods and cross-origin calls', async () => {
     const env = makeEnv();
-    expect(
-      (await worker.fetch(makeRequest({ method: 'GET' }), env)).status,
-    ).toBe(405);
+    expect((await worker.fetch(makeRequest({ method: 'GET' }), env)).status).toBe(
+      405,
+    );
     expect(
       (
         await worker.fetch(
-          makeRequest({ headers: { 'content-type': 'application/json', origin: 'https://evil.com' } }),
+          makeRequest({
+            headers: { 'content-type': 'application/json', origin: 'https://evil.com' },
+          }),
           env,
         )
       ).status,
