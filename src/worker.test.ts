@@ -151,7 +151,7 @@ describe('rollup', () => {
       DB: { prepare, batch },
     };
 
-    await rollup(env);
+    await rollup(env as unknown as Parameters<typeof rollup>[0]);
 
     expect(global.fetch).toHaveBeenCalledWith(
       'https://api.cloudflare.com/client/v4/accounts/test-account/analytics_engine/sql',
