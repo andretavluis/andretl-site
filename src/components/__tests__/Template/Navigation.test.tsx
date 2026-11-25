@@ -41,7 +41,9 @@ describe('Navigation', () => {
     // Should have links for About, Resume, and Analytics
     expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /resume/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /analytics/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /analytics/i }),
+    ).toBeInTheDocument();
   });
 
   it('marks home route as active when on homepage', () => {
