@@ -10,6 +10,7 @@ describe('sitemap', () => {
       'https://andretl.com',
       'https://andretl.com/about',
       'https://andretl.com/resume',
+      'https://andretl.com/stats',
       'https://andretl.com/contact',
     ]);
   });
