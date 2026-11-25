@@ -154,3 +154,12 @@
   background: var(--color-surface-subtle);
   border-radius: var(--radius-md);
 }
+
+.stats-header-text .page-title {
+  margin-bottom: 0.35rem;
+}
+
+.stats-header-text .page-subtitle {
+  margin-bottom: 0;
+  max-width: 34rem;
+}
