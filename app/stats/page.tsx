@@ -85,9 +85,7 @@ export default function StatsPage() {
         <header className="stats-header">
           <div className="stats-header-text">
             <h1 className="page-title">Analytics</h1>
-            <p className="page-subtitle">
-              Live visitor stats for andretl.com.
-            </p>
+            <p className="page-subtitle">Live visitor stats for andretl.com.</p>
           </div>
           <div className="stats-range-selector">
             {RANGE_OPTIONS.map((option) => (
