@@ -18,6 +18,10 @@ const routes: Route[] = [
     label: 'Resume',
     path: '/resume',
   },
+  {
+    label: 'Analytics',
+    path: '/stats',
+  },
 ];
 
 export default routes;

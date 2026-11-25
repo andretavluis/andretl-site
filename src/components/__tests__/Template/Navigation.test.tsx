@@ -38,10 +38,12 @@ describe('Navigation', () => {
   it('renders navigation links for all non-index routes', () => {
     render(<Navigation />);
 
-    // Should have links for About and Resume (Stats moved into About)
+    // Should have links for About, Resume, and Analytics
     expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /resume/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /stats/i })).toBeNull();
+    expect(
+      screen.getByRole('link', { name: /analytics/i }),
+    ).toBeInTheDocument();
   });
 
   it('marks home route as active when on homepage', () => {

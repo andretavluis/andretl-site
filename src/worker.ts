@@ -201,10 +201,16 @@ export async function rollup(env: Env): Promise<void> {
 
 async function handleStats(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
-  const days = Math.min(Number(url.searchParams.get('days') ?? '30'), 90);
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+  const daysParam = url.searchParams.get('days') ?? '30';
+  const since =
+    daysParam === 'all'
+      ? '1970-01-01'
+      : new Date(
+          Date.now() -
+            Math.min(Number(daysParam) || 30, 3650) * 24 * 60 * 60 * 1000,
+        )
+          .toISOString()
+          .slice(0, 10);
 
   const totals = await env.DB.prepare(
     'SELECT COALESCE(SUM(views), 0) AS views FROM daily_stats WHERE event_date >= ?',

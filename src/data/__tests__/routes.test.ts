@@ -39,7 +39,7 @@ describe('routes', () => {
     expect(paths).toContain('/');
     expect(paths).toContain('/about');
     expect(paths).toContain('/resume');
-    expect(paths).not.toContain('/stats');
+    expect(paths).toContain('/stats');
   });
 
   it('has unique paths', () => {
