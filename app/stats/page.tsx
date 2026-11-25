@@ -31,7 +31,7 @@ interface StatsResponse {
   byDate: { event_date: string; views: number }[];
 }
 
-const RANGE_OPTIONS = [7, 30, 90] as const;
+const RANGE_OPTIONS = [7, 30, 90, 'all'] as const;
 
 function ChartPlaceholder({ height }: { height: number }) {
   return (
@@ -42,14 +42,14 @@ function ChartPlaceholder({ height }: { height: number }) {
 }
 
 export default function StatsPage() {
-  const [days, setDays] = useState<(typeof RANGE_OPTIONS)[number]>(30);
+  const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>(30);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setStats(null);
     setError(null);
-    fetch(`/api/stats?days=${days}`)
+    fetch(`/api/stats?days=${range}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         return res.json() as Promise<StatsResponse>;
@@ -58,7 +58,7 @@ export default function StatsPage() {
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Unknown error'),
       );
-  }, [days]);
+  }, [range]);
 
   const viewsOverTime: ViewsOverTimePoint[] = stats?.byDate ?? [];
   const topPaths: TopBarDatum[] =
@@ -83,20 +83,26 @@ export default function StatsPage() {
     <PageWrapper>
       <section className="stats-page">
         <header className="stats-header">
-          <h1 className="page-title">Analytics</h1>
+          <div className="stats-header-text">
+            <h1 className="page-title">Analytics</h1>
+            <p className="page-subtitle">
+              Privacy-friendly analytics for this site — aggregated page views
+              only, no cookies or personal data collected.
+            </p>
+          </div>
           <div className="stats-range-selector">
             {RANGE_OPTIONS.map((option) => (
               <button
                 key={option}
                 type="button"
                 className={
-                  option === days
+                  option === range
                     ? 'stats-range-button stats-range-button--active'
                     : 'stats-range-button'
                 }
-                onClick={() => setDays(option)}
+                onClick={() => setRange(option)}
               >
-                {option}d
+                {option === 'all' ? 'All' : `${option}d`}
               </button>
             ))}
           </div>
