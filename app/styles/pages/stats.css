@@ -1,0 +1,156 @@
+/* ========================================
+   STATS DASHBOARD PAGE
+   ======================================== */
+
+.stats-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-section-sm);
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stats-header .page-title {
+  margin-bottom: 0;
+}
+
+.stats-range-selector {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.stats-range-button {
+  padding: 0.375rem 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-fg-light);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.stats-range-button:hover {
+  color: var(--color-fg-bold);
+}
+
+.stats-range-button--active {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.stats-range-button--active:hover {
+  color: var(--color-white);
+}
+
+.stats-error,
+.stats-loading {
+  color: var(--color-fg-light);
+}
+
+/* Stat cards */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.stat-card:hover {
+  border-color: var(--color-accent-border);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card-label {
+  font-size: var(--text-sm);
+  color: var(--color-fg-light);
+  letter-spacing: var(--tracking-normal);
+}
+
+.stat-card-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-black);
+  color: var(--color-fg-bold);
+}
+
+.stat-card-value--text {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Chart cards */
+.stats-chart-card {
+  padding: 1.5rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.stats-chart-card:hover {
+  border-color: var(--color-accent-border);
+  box-shadow: var(--shadow-md);
+}
+
+.stats-chart-card--wide {
+  width: 100%;
+}
+
+.stats-chart-title {
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-fg-bold);
+  margin-bottom: 1rem;
+}
+
+.stats-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media screen and (min-width: 736px) {
+  .stats-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stats-chart-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-light);
+  font-size: var(--text-sm);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+}
