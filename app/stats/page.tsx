@@ -1,6 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+
+import type { DeviceDatum } from '@/components/Stats/DeviceDonutChart';
+import type { TopBarDatum } from '@/components/Stats/TopBarChart';
+import type { ViewsOverTimePoint } from '@/components/Stats/ViewsOverTimeChart';
+import PageWrapper from '@/components/Template/PageWrapper';
+
+const ViewsOverTimeChart = dynamic(
+  () => import('@/components/Stats/ViewsOverTimeChart'),
+  { ssr: false, loading: () => <ChartPlaceholder height={280} /> },
+);
+const TopBarChart = dynamic(() => import('@/components/Stats/TopBarChart'), {
+  ssr: false,
+  loading: () => <ChartPlaceholder height={240} />,
+});
+const DeviceDonutChart = dynamic(
+  () => import('@/components/Stats/DeviceDonutChart'),
+  { ssr: false, loading: () => <ChartPlaceholder height={240} /> },
+);
 
 interface StatsResponse {
   since: string;
@@ -12,12 +31,25 @@ interface StatsResponse {
   byDate: { event_date: string; views: number }[];
 }
 
+const RANGE_OPTIONS = [7, 30, 90] as const;
+
+function ChartPlaceholder({ height }: { height: number }) {
+  return (
+    <div className="stats-chart-placeholder" style={{ height }}>
+      Loading chart…
+    </div>
+  );
+}
+
 export default function StatsPage() {
+  const [days, setDays] = useState<(typeof RANGE_OPTIONS)[number]>(30);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/stats')
+    setStats(null);
+    setError(null);
+    fetch(`/api/stats?days=${days}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         return res.json() as Promise<StatsResponse>;
@@ -26,49 +58,107 @@ export default function StatsPage() {
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Unknown error'),
       );
-  }, []);
+  }, [days]);
 
-  if (error) return <main className="p-8">Failed to load stats: {error}</main>;
-  if (!stats) return <main className="p-8">Loading…</main>;
+  const viewsOverTime: ViewsOverTimePoint[] = stats?.byDate ?? [];
+  const topPaths: TopBarDatum[] =
+    stats?.byPath.map((row) => ({ label: row.path, views: row.views })) ?? [];
+  const topReferrers: TopBarDatum[] =
+    stats?.byReferrer.map((row) => ({
+      label: row.referrer_host,
+      views: row.views,
+    })) ?? [];
+  const topCountries: TopBarDatum[] =
+    stats?.byCountry.map((row) => ({
+      label: row.country,
+      views: row.views,
+    })) ?? [];
+  const deviceBreakdown: DeviceDatum[] = stats?.byDevice ?? [];
+
+  const topPath = stats?.byPath[0]?.path ?? '—';
+  const topReferrer = stats?.byReferrer[0]?.referrer_host ?? '—';
+  const topCountry = stats?.byCountry[0]?.country ?? '—';
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">Stats (last 30 days)</h1>
-      <p>Total views: {stats.totalViews}</p>
-      <Table title="Top paths" rows={stats.byPath} keyField="path" />
-      <Table
-        title="Referrers"
-        rows={stats.byReferrer}
-        keyField="referrer_host"
-      />
-      <Table title="Countries" rows={stats.byCountry} keyField="country" />
-      <Table title="Devices" rows={stats.byDevice} keyField="device" />
-    </main>
-  );
-}
+    <PageWrapper>
+      <section className="stats-page">
+        <header className="stats-header">
+          <h1 className="page-title">Analytics</h1>
+          <div className="stats-range-selector">
+            {RANGE_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={
+                  option === days
+                    ? 'stats-range-button stats-range-button--active'
+                    : 'stats-range-button'
+                }
+                onClick={() => setDays(option)}
+              >
+                {option}d
+              </button>
+            ))}
+          </div>
+        </header>
 
-function Table<K extends string>({
-  title,
-  rows,
-  keyField,
-}: {
-  title: string;
-  rows: Record<K | 'views', string | number>[];
-  keyField: K;
-}) {
-  return (
-    <section>
-      <h2 className="text-lg font-semibold mb-2">{title}</h2>
-      <table className="w-full text-sm">
-        <tbody>
-          {rows.map((row) => (
-            <tr key={String(row[keyField])}>
-              <td className="pr-4">{row[keyField]}</td>
-              <td>{row.views}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+        {error && <p className="stats-error">Failed to load stats: {error}</p>}
+
+        {!error && !stats && <p className="stats-loading">Loading…</p>}
+
+        {stats && (
+          <>
+            <div className="stats-cards">
+              <div className="stat-card">
+                <span className="stat-card-label">Total views</span>
+                <span className="stat-card-value">{stats.totalViews}</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card-label">Top path</span>
+                <span className="stat-card-value stat-card-value--text">
+                  {topPath}
+                </span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card-label">Top referrer</span>
+                <span className="stat-card-value stat-card-value--text">
+                  {topReferrer}
+                </span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card-label">Top country</span>
+                <span className="stat-card-value stat-card-value--text">
+                  {topCountry}
+                </span>
+              </div>
+            </div>
+
+            <div className="stats-chart-card stats-chart-card--wide">
+              <h2 className="stats-chart-title">Views over time</h2>
+              <ViewsOverTimeChart data={viewsOverTime} />
+            </div>
+
+            <div className="stats-charts-grid">
+              <div className="stats-chart-card">
+                <h2 className="stats-chart-title">Top paths</h2>
+                <TopBarChart data={topPaths} />
+              </div>
+              <div className="stats-chart-card">
+                <h2 className="stats-chart-title">Top referrers</h2>
+                <TopBarChart data={topReferrers} />
+              </div>
+              <div className="stats-chart-card">
+                <h2 className="stats-chart-title">Top countries</h2>
+                <TopBarChart data={topCountries} />
+              </div>
+              <div className="stats-chart-card">
+                <h2 className="stats-chart-title">Devices</h2>
+                <DeviceDonutChart data={deviceBreakdown} />
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+    </PageWrapper>
   );
 }
