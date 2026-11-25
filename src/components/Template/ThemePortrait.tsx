@@ -5,6 +5,19 @@ interface ThemePortraitProps {
   className?: string;
 }
 
+const PORTRAIT_VARIANTS = [
+  { maxWidth: 80, src: '/images/me-160.webp' },
+  { maxWidth: 160, src: '/images/me-320.webp' },
+] as const;
+
+/** Picks the smallest portrait asset that still covers 2x retina at the given display width. */
+function getPortraitSrc(width: number): string {
+  return (
+    PORTRAIT_VARIANTS.find((v) => width <= v.maxWidth)?.src ??
+    PORTRAIT_VARIANTS[PORTRAIT_VARIANTS.length - 1].src
+  );
+}
+
 /**
  * Theme-aware portrait that swaps between light and dark mode images.
  *
@@ -21,11 +34,13 @@ export default function ThemePortrait({
   priority = false,
   className = '',
 }: ThemePortraitProps) {
+  const src = getPortraitSrc(width);
+
   return (
     <span className={`theme-portrait ${className}`}>
       {/* biome-ignore lint/performance/noImgElement: Using native img to avoid next/image runtime overhead for static export */}
       <img
-        src="/images/me-320.webp"
+        src={src}
         alt="André Luís"
         width={width}
         height={height}
@@ -36,7 +51,7 @@ export default function ThemePortrait({
       />
       {/* biome-ignore lint/performance/noImgElement: Using native img to avoid next/image runtime overhead for static export */}
       <img
-        src="/images/me-320.webp"
+        src={src}
         alt="André Luís"
         width={width}
         height={height}
