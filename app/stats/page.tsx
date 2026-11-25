@@ -86,8 +86,7 @@ export default function StatsPage() {
           <div className="stats-header-text">
             <h1 className="page-title">Analytics</h1>
             <p className="page-subtitle">
-              Privacy-friendly analytics for this site — aggregated page views
-              only, no cookies or personal data collected.
+              Live visitor stats for andretl.com.
             </p>
           </div>
           <div className="stats-range-selector">
