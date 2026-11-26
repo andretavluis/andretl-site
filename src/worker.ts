@@ -4,8 +4,6 @@
 //   blob1 path, blob2 referrer host, blob3 country, blob4 device class
 // scheduled(): nightly rollup from Analytics Engine into D1 (events + daily_stats).
 
-import type { PresenceRoom } from './durable-objects/PresenceRoom';
-
 export { PresenceRoom } from './durable-objects/PresenceRoom';
 
 type DeviceClass = 'mobile' | 'desktop' | 'bot';
