@@ -1,10 +1,8 @@
 import Link from 'next/link';
 
 import ContactIcons from '@/components/Contact/ContactIcons';
-
-import ThemePortrait from './ThemePortrait';
-
 import PresenceIndicator from '@/components/Presence/PresenceIndicator';
+import ThemePortrait from './ThemePortrait';
 
 export default function Footer() {
   return (
