@@ -105,7 +105,10 @@ export default function ContactForm() {
         </p>
       )}
 
-      <button type="submit" disabled={!turnstileToken || status === 'submitting'}>
+      <button
+        type="submit"
+        disabled={!turnstileToken || status === 'submitting'}
+      >
         {status === 'submitting' ? 'Sending…' : 'Send message'}
       </button>
     </form>
