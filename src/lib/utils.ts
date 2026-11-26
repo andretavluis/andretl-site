@@ -7,6 +7,7 @@ export const SITE_URL = 'https://andretl.com';
 export const AUTHOR_NAME = 'André Luís';
 export const TWITTER_HANDLE = '';
 export const CONTACT_EMAIL = 'aluis6847@gmail.com';
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAGUT0YXGHcJ9qIgQ'; // public, safe to commit
 
 // Image dimension constants
 export const AVATAR_SIZE = {
