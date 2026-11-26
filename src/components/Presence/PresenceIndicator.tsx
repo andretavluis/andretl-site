@@ -26,5 +26,7 @@ export default function PresenceIndicator() {
 
   if (count === null || count <= 1) return null;
 
-  return <p className="presence-indicator">👀 {count} people viewing this page</p>;
+  return (
+    <p className="presence-indicator">👀 {count} people viewing this page</p>
+  );
 }
