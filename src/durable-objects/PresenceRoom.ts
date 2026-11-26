@@ -1,5 +1,33 @@
 import { DurableObject } from 'cloudflare:workers';
 
+// Minimal ambient type shims for the Durable Objects WebSocket Hibernation
+// APIs used here. This project intentionally avoids @cloudflare/workers-types
+// as a project-wide dependency; these are small, additive declarations
+// scoped to just the runtime pieces this file actually uses.
+declare module 'cloudflare:workers' {
+  export class DurableObject<Env = unknown> {
+    protected ctx: DurableObjectState;
+    protected env: Env;
+    constructor(ctx: DurableObjectState, env: Env);
+  }
+}
+
+interface DurableObjectState {
+  acceptWebSocket: (ws: WebSocket) => void;
+  getWebSockets: () => WebSocket[];
+}
+
+declare class WebSocketPair {
+  0: WebSocket;
+  1: WebSocket;
+}
+
+declare global {
+  interface ResponseInit {
+    webSocket?: WebSocket;
+  }
+}
+
 export class PresenceRoom extends DurableObject {
   async fetch(request: Request): Promise<Response> {
     if (request.headers.get('Upgrade') !== 'websocket') {
@@ -7,7 +35,8 @@ export class PresenceRoom extends DurableObject {
     }
 
     const pair = new WebSocketPair();
-    const [client, server] = Object.values(pair);
+    const client = pair[0];
+    const server = pair[1];
 
     this.ctx.acceptWebSocket(server);
     this.broadcastCount();
