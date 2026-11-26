@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import worker, { classifyDevice, referrerHost, rollup } from './worker';
 
 function makeEnv() {
@@ -47,7 +48,7 @@ describe('handleContact / POST /api/contact', () => {
     const request = new Request('https://andretl.com/api/contact', {
       method: 'GET',
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(405);
   });
 
@@ -58,7 +59,7 @@ describe('handleContact / POST /api/contact', () => {
       headers: { Origin: 'https://evil.example.com' },
       body: JSON.stringify(validBody),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(403);
   });
 
@@ -68,7 +69,7 @@ describe('handleContact / POST /api/contact', () => {
       method: 'POST',
       body: JSON.stringify({ ...validBody, website: 'spam' }),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(200);
     expect(env.EMAIL.send).not.toHaveBeenCalled();
   });
@@ -79,7 +80,7 @@ describe('handleContact / POST /api/contact', () => {
       method: 'POST',
       body: JSON.stringify({ ...validBody, email: 'not-an-email' }),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(400);
   });
 
@@ -92,7 +93,7 @@ describe('handleContact / POST /api/contact', () => {
       method: 'POST',
       body: JSON.stringify(validBody),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(400);
     expect(env.EMAIL.send).not.toHaveBeenCalled();
   });
@@ -103,7 +104,7 @@ describe('handleContact / POST /api/contact', () => {
       method: 'POST',
       body: JSON.stringify(validBody),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(200);
     expect(env.EMAIL.send).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -122,7 +123,7 @@ describe('handleContact / POST /api/contact', () => {
       method: 'POST',
       body: JSON.stringify(validBody),
     });
-    const response = await worker.fetch(request, env, ctx);
+    const response = await worker.fetch(request, env);
     expect(response.status).toBe(500);
   });
 });
