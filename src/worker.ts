@@ -1,7 +1,10 @@
-// Worker for andretl-site.// POST /api/track: records a page-view event in Analytics Engine.
+// Worker for andretl-site.
+// POST /api/track: records a page-view event in Analytics Engine.
 // Blob layout (order is contractual, queries depend on it):
 //   blob1 path, blob2 referrer host, blob3 country, blob4 device class
 // scheduled(): nightly rollup from Analytics Engine into D1 (events + daily_stats).
+
+export { PresenceRoom } from './durable-objects/PresenceRoom';
 
 type DeviceClass = 'mobile' | 'desktop' | 'bot';
 
@@ -24,11 +27,20 @@ interface D1Like {
   batch: (statements: D1PreparedStatement[]) => Promise<unknown>;
 }
 
+interface DurableObjectStub {
+  fetch: (request: Request) => Promise<Response>;
+}
+
+interface DurableObjectNamespace {
+  getByName: (name: string) => DurableObjectStub;
+}
+
 interface Env {
   ANALYTICS: AnalyticsDataset;
   DB: D1Like;
   CF_ACCOUNT_ID: string;
   CF_API_TOKEN: string;
+  PRESENCE: DurableObjectNamespace;
 }
 
 export function classifyDevice(userAgent: string): DeviceClass {
@@ -247,11 +259,19 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
   });
 }
 
+async function handlePresence(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.searchParams.get('path') ?? '/';
+  const room = env.PRESENCE.getByName(path);
+  return room.fetch(request);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url);
     if (pathname === '/api/track') return handleTrack(request, env);
     if (pathname === '/api/stats') return handleStats(request, env);
+    if (pathname === '/api/presence') return handlePresence(request, env);
     return new Response('Not found', { status: 404 });
   },
   async scheduled(

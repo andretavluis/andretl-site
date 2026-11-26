@@ -7,6 +7,7 @@ function makeEnv() {
     DB: { prepare: vi.fn(), batch: vi.fn() },
     CF_ACCOUNT_ID: 'test-account',
     CF_API_TOKEN: 'test-token',
+    PRESENCE: { getByName: vi.fn() },
   };
 }
 

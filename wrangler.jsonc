@@ -27,5 +27,11 @@
   ],
   "triggers": {
     "crons": ["0 3 * * *"]
-  }
+  },
+  "keep_vars": true,
+  "workers_dev": false,
+  "durable_objects": {
+    "bindings": [{ "name": "PRESENCE", "class_name": "PresenceRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PresenceRoom"] }]
 }
