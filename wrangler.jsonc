@@ -33,5 +33,8 @@
   "durable_objects": {
     "bindings": [{ "name": "PRESENCE", "class_name": "PresenceRoom" }]
   },
+  "send_email": [
+    { "name": "EMAIL", "destination_address": "aluis6847@gmail.com" }
+  ],
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PresenceRoom"] }]
 }

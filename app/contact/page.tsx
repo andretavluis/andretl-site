@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 
-import EmailLink from '@/components/Contact/EmailLink';
+import ContactForm from '@/components/Contact/ContactForm';
 
 import PageWrapper from '@/components/Template/PageWrapper';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Contact André Luís via email at aluis6847@gmail.com',
+  description: 'Get in Touch',
 };
 
 export default function ContactPage() {
@@ -18,9 +18,7 @@ export default function ContactPage() {
         </header>
 
         <div className="contact-content">
-          <div className="contact-email-block">
-            <EmailLink />
-          </div>
+          <ContactForm />
         </div>
       </section>
     </PageWrapper>

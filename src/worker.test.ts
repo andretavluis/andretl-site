@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import worker, { classifyDevice, referrerHost, rollup } from './worker';
 
 function makeEnv() {
@@ -8,6 +9,8 @@ function makeEnv() {
     CF_ACCOUNT_ID: 'test-account',
     CF_API_TOKEN: 'test-token',
     PRESENCE: { getByName: vi.fn() },
+    EMAIL: { send: vi.fn().mockResolvedValue({ messageId: 'test-id' }) },
+    TURNSTILE_SECRET_KEY: 'test-secret-key',
   };
 }
 
@@ -21,6 +24,109 @@ function makeRequest(init?: RequestInit) {
     ...init,
   });
 }
+
+describe('handleContact / POST /api/contact', () => {
+  const validBody = {
+    name: 'Jane Visitor',
+    email: 'jane@example.com',
+    message: 'Hello there!',
+    turnstileToken: 'test-token',
+  };
+
+  beforeEach(() => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 200 }),
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('rejects non-POST requests', async () => {
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'GET',
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(405);
+  });
+
+  it('rejects requests from an unexpected origin', async () => {
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example.com' },
+      body: JSON.stringify(validBody),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(403);
+  });
+
+  it('silently succeeds without sending when the honeypot is filled', async () => {
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      body: JSON.stringify({ ...validBody, website: 'spam' }),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(200);
+    expect(env.EMAIL.send).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid fields', async () => {
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      body: JSON.stringify({ ...validBody, email: 'not-an-email' }),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(400);
+  });
+
+  it('rejects when Turnstile verification fails', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ success: false }), { status: 200 }),
+    );
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      body: JSON.stringify(validBody),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(400);
+    expect(env.EMAIL.send).not.toHaveBeenCalled();
+  });
+
+  it('sends the email and returns 200 on a valid submission', async () => {
+    const env = makeEnv();
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      body: JSON.stringify(validBody),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(200);
+    expect(env.EMAIL.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'aluis6847@gmail.com',
+        replyTo: 'jane@example.com',
+      }),
+    );
+  });
+
+  it('returns 500 when sending fails', async () => {
+    const env = makeEnv();
+    (env.EMAIL.send as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('boom'),
+    );
+    const request = new Request('https://andretl.com/api/contact', {
+      method: 'POST',
+      body: JSON.stringify(validBody),
+    });
+    const response = await worker.fetch(request, env);
+    expect(response.status).toBe(500);
+  });
+});
 
 describe('classifyDevice', () => {
   it('detects bots, mobile and desktop', () => {
