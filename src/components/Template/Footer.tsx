@@ -4,6 +4,8 @@ import ContactIcons from '@/components/Contact/ContactIcons';
 
 import ThemePortrait from './ThemePortrait';
 
+import PresenceIndicator from '@/components/Presence/PresenceIndicator';
+
 export default function Footer() {
   return (
     <footer className="site-footer-new">
@@ -25,6 +27,7 @@ export default function Footer() {
                 Source
               </a>
             </p>
+            <PresenceIndicator />
           </div>
         </div>
 
