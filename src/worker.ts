@@ -41,6 +41,8 @@ interface Env {
   CF_ACCOUNT_ID: string;
   CF_API_TOKEN: string;
   PRESENCE: DurableObjectNamespace;
+  EMAIL: SendEmail;
+  TURNSTILE_SECRET_KEY: string;
 }
 
 export function classifyDevice(userAgent: string): DeviceClass {
