@@ -27,7 +27,9 @@ describe('ContactForm', () => {
   it('submits the form and shows a success message', async () => {
     render(<ContactForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Jane' } });
+    fireEvent.change(screen.getByLabelText('Name'), {
+      target: { value: 'Jane' },
+    });
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'jane@example.com' },
     });
@@ -47,10 +49,14 @@ describe('ContactForm', () => {
   });
 
   it('shows an error message when the request fails', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValue(new Response(null, { status: 500 }));
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(null, { status: 500 }),
+    );
     render(<ContactForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Jane' } });
+    fireEvent.change(screen.getByLabelText('Name'), {
+      target: { value: 'Jane' },
+    });
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'jane@example.com' },
     });
