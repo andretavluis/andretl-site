@@ -35,6 +35,32 @@ interface DurableObjectNamespace {
   getByName: (name: string) => DurableObjectStub;
 }
 
+interface EmailAddress {
+  email: string;
+  name?: string;
+}
+
+interface SendEmailMessage {
+  to: string | EmailAddress;
+  from: string | EmailAddress;
+  replyTo?: string | EmailAddress;
+  subject: string;
+  text?: string;
+}
+
+interface SendEmailResult {
+  messageId: string;
+}
+
+interface SendEmail {
+  send(message: SendEmailMessage): Promise<SendEmailResult>;
+}
+
+interface TurnstileVerifyResult {
+  success: boolean;
+  'error-codes'?: string[];
+}
+
 interface Env {
   ANALYTICS: AnalyticsDataset;
   DB: D1Like;
@@ -52,6 +78,150 @@ export function classifyDevice(userAgent: string): DeviceClass {
   }
   if (/mobile|iphone|android|ipad/.test(ua)) return 'mobile';
   return 'desktop';
+}
+
+const CONTACT_EMAIL = 'aluis6847@gmail.com';
+const CONTACT_FROM_ADDRESS = 'hi@andretl.com';
+const CONTACT_MAX_NAME_LENGTH = 100;
+const CONTACT_MAX_MESSAGE_LENGTH = 5000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+interface ContactSubmission {
+  name: string;
+  email: string;
+  message: string;
+  website?: string;
+  turnstileToken?: string;
+}
+
+function validateContactSubmission(
+  body: unknown,
+): { ok: true; data: ContactSubmission } | { ok: false; error: string } {
+  if (typeof body !== 'object' || body === null) {
+    return { ok: false, error: 'Invalid request body' };
+  }
+  const { name, email, message, website, turnstileToken } = body as Record<
+    string,
+    unknown
+  >;
+
+  if (
+    typeof name !== 'string' ||
+    name.trim().length === 0 ||
+    name.length > CONTACT_MAX_NAME_LENGTH
+  ) {
+    return { ok: false, error: 'Please provide a valid name' };
+  }
+  if (typeof email !== 'string' || !EMAIL_REGEX.test(email)) {
+    return { ok: false, error: 'Please provide a valid email address' };
+  }
+  if (
+    typeof message !== 'string' ||
+    message.trim().length === 0 ||
+    message.length > CONTACT_MAX_MESSAGE_LENGTH
+  ) {
+    return { ok: false, error: 'Please provide a message' };
+  }
+
+  return {
+    ok: true,
+    data: {
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+      website: typeof website === 'string' ? website : undefined,
+      turnstileToken:
+        typeof turnstileToken === 'string' ? turnstileToken : undefined,
+    },
+  };
+}
+
+async function verifyTurnstileToken(
+  token: string,
+  ip: string | null,
+  secret: string,
+): Promise<boolean> {
+  const body = new URLSearchParams();
+  body.append('secret', secret);
+  body.append('response', token);
+  if (ip) body.append('remoteip', ip);
+
+  try {
+    const response = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      { method: 'POST', body },
+    );
+    const result = (await response.json()) as TurnstileVerifyResult;
+    return result.success === true;
+  } catch {
+    return false;
+  }
+}
+
+function jsonResponse(data: unknown, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function handleContact(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return jsonResponse({ ok: false, error: 'Method not allowed' }, 405);
+  }
+
+  const origin = request.headers.get('Origin');
+  if (origin && origin !== 'https://andretl.com') {
+    return jsonResponse({ ok: false, error: 'Invalid origin' }, 403);
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400);
+  }
+
+  const validation = validateContactSubmission(body);
+  if (!validation.ok) {
+    return jsonResponse({ ok: false, error: validation.error }, 400);
+  }
+
+  const { name, email, message, website, turnstileToken } = validation.data;
+
+  // Honeypot: real visitors never see or fill this field.
+  if (website) {
+    return jsonResponse({ ok: true }, 200);
+  }
+
+  if (!turnstileToken) {
+    return jsonResponse({ ok: false, error: 'Verification required' }, 400);
+  }
+
+  const clientIp = request.headers.get('CF-Connecting-IP');
+  const verified = await verifyTurnstileToken(
+    turnstileToken,
+    clientIp,
+    env.TURNSTILE_SECRET_KEY,
+  );
+  if (!verified) {
+    return jsonResponse({ ok: false, error: 'Verification failed' }, 400);
+  }
+
+  try {
+    await env.EMAIL.send({
+      to: CONTACT_EMAIL,
+      from: CONTACT_FROM_ADDRESS,
+      replyTo: email,
+      subject: `New message from ${name} — andretl.com`,
+      text: `You've got a new message from your contact form.\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}\n\n---\nSent via andretl.com/contact`,
+    });
+  } catch (err) {
+    console.error('Failed to send contact email', err);
+    return jsonResponse({ ok: false, error: 'Failed to send message' }, 500);
+  }
+
+  return jsonResponse({ ok: true }, 200);
 }
 
 export function referrerHost(referrer: string): string {
@@ -274,6 +444,7 @@ export default {
     if (pathname === '/api/track') return handleTrack(request, env);
     if (pathname === '/api/stats') return handleStats(request, env);
     if (pathname === '/api/presence') return handlePresence(request, env);
+    if (url.pathname === '/api/contact') return handleContact(request, env);
     return new Response('Not found', { status: 404 });
   },
   async scheduled(
