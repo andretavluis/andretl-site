@@ -7,9 +7,9 @@ import TurnstileWidget from './TurnstileWidget';
 type SubmissionState = 'idle' | 'submitting' | 'success' | 'error';
 
 const inputClasses =
-  'w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-fg-bold)] outline-none transition-colors focus:border-[var(--color-accent)]';
+  'w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-[var(--color-fg-bold)] outline-none transition-colors focus:border-[var(--color-accent)]';
 const labelClasses =
-  'mb-2 block text-sm font-semibold text-[var(--color-fg-bold)]';
+  'mb-1.5 block text-sm font-semibold text-[var(--color-fg-bold)]';
 
 export default function ContactForm() {
   const [name, setName] = useState('');
@@ -43,13 +43,13 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="mx-auto max-w-xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-8 shadow-lg sm:p-10">
+    <div className="mx-auto max-w-2xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-lg sm:p-8">
       {status === 'success' ? (
         <p className="text-center text-lg text-[var(--color-fg-bold)]">
           Thanks for reaching out! I&apos;ll get back to you soon.
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="contact-name" className={labelClasses}>
               * Name
@@ -90,7 +90,7 @@ export default function ContactForm() {
               name="message"
               required
               maxLength={5000}
-              rows={8}
+              rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className={`${inputClasses} resize-y rounded-2xl`}
