@@ -19,21 +19,21 @@ describe('ContactForm', () => {
 
   it('renders the required fields', () => {
     render(<ContactForm />);
-    expect(screen.getByLabelText('Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Message')).toBeInTheDocument();
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/message/i)).toBeInTheDocument();
   });
 
   it('submits the form and shows a success message', async () => {
     render(<ContactForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), {
+    fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: 'Jane' },
     });
-    fireEvent.change(screen.getByLabelText('Email'), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'jane@example.com' },
     });
-    fireEvent.change(screen.getByLabelText('Message'), {
+    fireEvent.change(screen.getByLabelText(/message/i), {
       target: { value: 'Hello!' },
     });
     fireEvent.click(screen.getByRole('button', { name: /send message/i }));
@@ -54,13 +54,13 @@ describe('ContactForm', () => {
     );
     render(<ContactForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), {
+    fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: 'Jane' },
     });
-    fireEvent.change(screen.getByLabelText('Email'), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'jane@example.com' },
     });
-    fireEvent.change(screen.getByLabelText('Message'), {
+    fireEvent.change(screen.getByLabelText(/message/i), {
       target: { value: 'Hello!' },
     });
     fireEvent.click(screen.getByRole('button', { name: /send message/i }));
