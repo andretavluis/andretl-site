@@ -15,7 +15,7 @@ describe('Footer', () => {
     render(<Footer />);
 
     expect(screen.getByText('André Luís')).toBeInTheDocument();
-    expect(screen.getByText('Data Analyst')).toBeInTheDocument();
+    expect(screen.getByText('Data Analyst at Cloudflare')).toBeInTheDocument();
   });
 
   it('displays the current year in copyright', () => {
@@ -38,10 +38,13 @@ describe('Footer', () => {
       'href',
       '/resume',
     );
-    expect(screen.queryByRole('link', { name: /stats/i })).toBeNull();
     expect(screen.getByRole('link', { name: /contact/i })).toHaveAttribute(
       'href',
       '/contact',
+    );
+    expect(screen.getByRole('link', { name: /analytics/i })).toHaveAttribute(
+      'href',
+      '/stats',
     );
   });
 
