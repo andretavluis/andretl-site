@@ -14,7 +14,7 @@ export default function Footer() {
           </Link>
           <div className="footer-info">
             <h3>André Luís</h3>
-            <p className="footer-role">Data Analyst</p>
+            <p className="footer-role">Data Analyst at Cloudflare</p>
             <p className="footer-copyright">
               &copy; {new Date().getFullYear()} ·{' '}
               <a
@@ -38,6 +38,7 @@ export default function Footer() {
               <Link href="/about">About</Link>
               <Link href="/resume">Resume</Link>
               <Link href="/contact">Contact</Link>
+              <Link href="/stats">Analytics</Link>
             </div>
           </nav>
 
