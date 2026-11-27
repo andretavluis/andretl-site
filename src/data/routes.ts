@@ -22,6 +22,10 @@ const routes: Route[] = [
     label: 'Analytics',
     path: '/stats',
   },
+  {
+    label: 'Contact',
+    path: '/contact',
+  },
 ];
 
 export default routes;
